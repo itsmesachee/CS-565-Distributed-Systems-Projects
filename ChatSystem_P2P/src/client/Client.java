@@ -14,8 +14,13 @@ import model.NodeInfo;
 
 public class Client implements MessageTypes {
 
+    //variables to hold the name of client per that instance and nodeInfo for which client has established connection
+    
     private String name;
     NodeInfo nodeInfo;
+
+    
+   //instances of object - input & output streams, socket protocol
 
     ObjectInputStream ois;
     ObjectOutputStream oos;
@@ -34,22 +39,41 @@ public class Client implements MessageTypes {
 
                 String text = sc.nextLine();
                 String[] parts = text.split(" "); // Split the message to identify any commands
-                
+           	
+                // takes in the clients name followed by command
+                                
                 // First word of string is JOIN 
                 if (parts[0].equals("JOIN")) {
                     //Read from file
                     // Parse the 2nd and 3rd parts of JOIN message to identify IP and port
+                   	// recognize the JOIN command and establish connection with name, IP, port and create streams
+
                     nodeInfo = new NodeInfo(parts[1], Integer.parseInt(parts[2]), name);
                     socket = new Socket(nodeInfo.getIP(), nodeInfo.getPort());
                     oos = new ObjectOutputStream(socket.getOutputStream());
                     ois = new ObjectInputStream(socket.getInputStream());
+                    
+                             
+                    // Displaiyng debugging information for client's joining into chat in server
+           
                     Message msg = new Message(MessageTypes.JOIN, nodeInfo);
                     oos.writeObject(msg);
                     System.out.println("Chat Group Joined!");
 
+              
+                    //creating a thread for the client with our required functionality with respect to the commands
+      
                     Thread thread = new Thread(() -> {
                         while (true) {
                             try {
+                                
+                                
+                            	/* 
+                            	 * listen and transfer all messages as TYPE - NOTE to server until the input matches
+                            	 * the pre-defined command 'SHUTDOWN ALL'.IF yes, then respective code for that command is executed,
+                            	 * by closing the socket and giving debugging information to user about the status of the server.
+                            	 */
+                                
                                 if (socket != null) {
                                     Message msg1 = (Message) ois.readObject();
                                     if (msg1.getType() == MessageTypes.NOTE) {
@@ -69,6 +93,11 @@ public class Client implements MessageTypes {
 
                 } else if (parts[0].equals("LEAVE")) {
                     // If first word of string is LEAVE, leave chat without terminating the client
+                    /*
+                	 * this code block is for the "LEAVE" command that states a particular client which executes
+                	 * this command shall leave the chat
+                	 */
+                	
                     Message msg = new Message(MessageTypes.LEAVE, nodeInfo);
                     oos.writeObject(msg);
                     socket.close();
@@ -80,6 +109,11 @@ public class Client implements MessageTypes {
 
                 } else if (parts[0].equals("SHUTDOWN_ALL")) {
                     // Shutdown all clients and the server
+                    
+                	/*
+                	 * This is a deadman switch to our server and to all the clients connected to the chat/server.
+                	 * As if any client sends this command, all the connected clients and server it to be terminated/stopped at that instant.
+                	 */
                     if (socket != null) {
                         Message msg = new Message(MessageTypes.SHUTDOWN_ALL, null);
                         oos.writeObject(msg);
@@ -95,6 +129,11 @@ public class Client implements MessageTypes {
                 } else {
                     // If client tries to leave without joining first, print this message
                     if (socket != null) {
+                        
+                    	/*
+                    	 * Here's the key part of our chat system that handles the messages/command sent by multiple clients through server.
+                    	 */
+                        
                         Message msg = new Message(MessageTypes.NOTE, name + ": " + text);
                         oos.writeObject(msg);
                     } else {
@@ -119,6 +158,11 @@ public class Client implements MessageTypes {
 
     private NodeInfo readConnectionInfo() {
         try {
+            
+        	/*
+        	 * Reading the details from properties file, as described in the requirements.
+        	 */
+            
             Scanner scanner = new Scanner(new FileInputStream("properties.txt"));
             String[] parts = scanner.nextLine().split(" ");
             String ip = parts[0];
