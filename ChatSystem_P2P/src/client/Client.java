@@ -65,6 +65,29 @@ public class Client {
                     });
                     thread.start();
                 }
+                else if (parts[0].equals("LEAVE")) {
+                    Message msg = new Message("LEAVE", nodeInfo);
+                    oos.writeObject(msg);
+                    socket.close();
+                    socket = null;
+                    ois = null;
+                    oos = null;
+
+                    System.out.println("You have left chat group!");
+
+                } else if (text.startsWith("SHUTDOWN ALL")) {
+                    if (socket != null) {
+                        Message msg = new Message("SHUTDOWN ALL", null);
+                        oos.writeObject(msg);
+                    }
+                } else if (parts[0].equals("SHUTDOWN")) {
+                    if (socket != null) {
+                        Message msg = new Message("LEAVE", nodeInfo);
+                        oos.writeObject(msg);
+                        socket.close();
+                    }
+                    System.exit(0);
+                }
             }
             catch (IOException ex) {
                 ex.printStackTrace();
