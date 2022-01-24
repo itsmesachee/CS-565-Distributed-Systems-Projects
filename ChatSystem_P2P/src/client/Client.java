@@ -88,6 +88,15 @@ public class Client {
                     }
                     System.exit(0);
                 }
+                else {
+
+                    if (socket != null) {
+                        Message msg = new Message("NOTE", name + ": " + text);
+                        oos.writeObject(msg);
+                    } else {
+                        System.out.println("You have not joined the chat!");
+                    }
+                }
             }
             catch (IOException ex) {
                 ex.printStackTrace();
