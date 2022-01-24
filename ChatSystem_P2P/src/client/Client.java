@@ -78,7 +78,7 @@ public class Client {
 
                     System.out.println("You have left chat group!");
 
-                } else if (parts[0].equals("SHUTDOWN ALL")) {
+                } else if (parts[0].equals("SHUTDOWN_ALL")) {
                     // Shutdown all clients and the server
                     if (socket != null) {
                         Message msg = new Message(MessageTypes.SHUTDOWN_ALL, null);
