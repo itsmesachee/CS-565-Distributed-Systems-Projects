@@ -11,7 +11,7 @@ import model.Message;
 import model.MessageTypes;
 import model.NodeInfo;
 
-public class Server {
+public class Server implements MessageTypes {
 
     private static List<ObjectOutputStream> outStreams = new ArrayList<>();
     private ServerSocket ss;
