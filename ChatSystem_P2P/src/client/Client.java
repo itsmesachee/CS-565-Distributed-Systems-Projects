@@ -3,6 +3,8 @@ package client;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import model.Message;
+import model.MessageTypes;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -10,9 +12,8 @@ import java.net.Socket;
 import java.util.Scanner;
 import model.NodeInfo;
 
-
 public class Client {
-    
+
     private String name;
     NodeInfo nodeInfo;
 
@@ -40,8 +41,7 @@ public class Client {
                     socket = new Socket(nodeInfo.getIP(), nodeInfo.getPort());
                     oos = new ObjectOutputStream(socket.getOutputStream());
                     ois = new ObjectInputStream(socket.getInputStream());
-
-                    Message msg = new Message("JOIN", nodeInfo);
+                    Message msg = new Message(MessageTypes.JOIN, nodeInfo);
                     oos.writeObject(msg);
                     System.out.println("Chat Group Joined!");
 
@@ -50,9 +50,9 @@ public class Client {
                             try {
                                 if (socket != null) {
                                     Message msg1 = (Message) ois.readObject();
-                                    if (msg1.getType().equals("NOTE")) {
+                                    if (msg1.getType() == MessageTypes.NOTE) {
                                         System.out.println(msg1.getContent());
-                                    } else if (msg1.getType().equals("SHUTDOWN ALL")) {
+                                    } else if (msg1.getType() == MessageTypes.SHUTDOWN_ALL) {
                                         System.out.println("Server is closed!");
                                         socket.close();
                                         System.exit(0);
@@ -64,9 +64,9 @@ public class Client {
                         }
                     });
                     thread.start();
-                }
-                else if (parts[0].equals("LEAVE")) {
-                    Message msg = new Message("LEAVE", nodeInfo);
+
+                } else if (parts[0].equals("LEAVE")) {
+                    Message msg = new Message(MessageTypes.LEAVE, nodeInfo);
                     oos.writeObject(msg);
                     socket.close();
                     socket = null;
@@ -75,36 +75,35 @@ public class Client {
 
                     System.out.println("You have left chat group!");
 
-                } else if (text.startsWith("SHUTDOWN ALL")) {
+                } else if (parts[0].equals("SHUTDOWN ALL")) {
                     if (socket != null) {
-                        Message msg = new Message("SHUTDOWN ALL", null);
+                        Message msg = new Message(MessageTypes.SHUTDOWN_ALL, null);
                         oos.writeObject(msg);
                     }
                 } else if (parts[0].equals("SHUTDOWN")) {
                     if (socket != null) {
-                        Message msg = new Message("LEAVE", nodeInfo);
+                        Message msg = new Message(MessageTypes.SHUTDOWN, nodeInfo);
                         oos.writeObject(msg);
                         socket.close();
                     }
                     System.exit(0);
-                }
-                else {
+                } else {
 
                     if (socket != null) {
-                        Message msg = new Message("NOTE", name + ": " + text);
+                        Message msg = new Message(MessageTypes.NOTE, name + ": " + text);
                         oos.writeObject(msg);
                     } else {
                         System.out.println("You have not joined the chat!");
                     }
+
                 }
-            }
-            catch (IOException ex) {
+
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
 
     }
-
 
     /**
      * @param args the command line arguments
