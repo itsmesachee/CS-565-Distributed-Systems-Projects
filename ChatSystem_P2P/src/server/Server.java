@@ -67,10 +67,12 @@ public class Server {
                     Message message = (Message) ois.readObject();
 
                     if (message.getType().equals("JOIN")) {
+                        // If new user sends JOIN message, add user to the Arraylist 
                         outStreams.add(oos);
                         NodeInfo info = (NodeInfo) message.getContent();
                         System.out.println(info.getName() + " has joined!");
                     } else if (message.getType().equals("LEAVE")) {
+                        // If user sends LEAVE message, remove user from Arraylist
                         outStreams.remove(oos);
                         ois.close();
                         oos.close();
@@ -78,6 +80,7 @@ public class Server {
                         System.out.println(info.getName() + " has left!");
                         break;
                     } else if (message.getType().equals("NOTE")) {
+                        // If user sends a regular string, send the message string to all users
                         System.out.println(message.getContent());
                         if (outStreams.contains(oos)) {
                             for (ObjectOutputStream stream : outStreams) {
@@ -85,6 +88,7 @@ public class Server {
                             }
                         }
                     } else if (message.getType().equals("SHUTDOWN ALL")) {
+                        // If user sends SHUTDOWN ALL, terminate all connections and shut down the server
                         System.out.println("Server is shutting down...");
                         for (ObjectOutputStream stream : outStreams) {
                             stream.writeObject(message);
