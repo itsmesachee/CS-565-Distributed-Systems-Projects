@@ -1,6 +1,6 @@
 package model;
 
-public class MessageTypes {
+public interface MessageTypes {
 	// Symbolic constants for different message types
 	public static final int JOIN = 1;
 	public static final int LEAVE = 2;
