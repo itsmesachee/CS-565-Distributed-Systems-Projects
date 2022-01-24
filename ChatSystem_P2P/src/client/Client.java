@@ -24,7 +24,7 @@ public class Client {
 
     public Client() throws IOException {
         Scanner sc = new Scanner(System.in);
-        System.out.print("Enter your name: ");
+        System.out.print("Enter your name: "); // Enter human readable client name
         name = sc.nextLine();
 
         System.out.println("Write commands..");
@@ -33,10 +33,12 @@ public class Client {
             try {
 
                 String text = sc.nextLine();
-                String[] parts = text.split(" ");
-
+                String[] parts = text.split(" "); // Split the message to identify any commands
+                
+                // First word of string is JOIN 
                 if (parts[0].equals("JOIN")) {
                     //Read from file
+                    // Parse the 2nd and 3rd parts of JOIN message to identify IP and port
                     nodeInfo = new NodeInfo(parts[1], Integer.parseInt(parts[2]), name);
                     socket = new Socket(nodeInfo.getIP(), nodeInfo.getPort());
                     oos = new ObjectOutputStream(socket.getOutputStream());
@@ -66,6 +68,7 @@ public class Client {
                     thread.start();
 
                 } else if (parts[0].equals("LEAVE")) {
+                    // If first word of string is LEAVE, leave chat without terminating
                     Message msg = new Message(MessageTypes.LEAVE, nodeInfo);
                     oos.writeObject(msg);
                     socket.close();
@@ -76,6 +79,7 @@ public class Client {
                     System.out.println("You have left chat group!");
 
                 } else if (parts[0].equals("SHUTDOWN ALL")) {
+                    // Shutdown all clients and the server
                     if (socket != null) {
                         Message msg = new Message(MessageTypes.SHUTDOWN_ALL, null);
                         oos.writeObject(msg);
