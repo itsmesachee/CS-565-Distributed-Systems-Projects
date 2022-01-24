@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import model.Message;
+import model.MessageTypes;
 import model.NodeInfo;
 
 public class Server {
@@ -66,12 +67,12 @@ public class Server {
 
                     Message message = (Message) ois.readObject();
 
-                    if (message.getType().equals("JOIN")) {
-                        // If new user sends JOIN message, add user to the Arraylist 
+                    if (message.getType() == MessageTypes.JOIN) {
+                        // If new user sends JOIN message, add user to the Arraylist
                         outStreams.add(oos);
                         NodeInfo info = (NodeInfo) message.getContent();
                         System.out.println(info.getName() + " has joined!");
-                    } else if (message.getType().equals("LEAVE")) {
+                    } else if (message.getType() == MessageTypes.LEAVE) {
                         // If user sends LEAVE message, remove user from Arraylist
                         outStreams.remove(oos);
                         ois.close();
@@ -79,7 +80,7 @@ public class Server {
                         NodeInfo info = (NodeInfo) message.getContent();
                         System.out.println(info.getName() + " has left!");
                         break;
-                    } else if (message.getType().equals("NOTE")) {
+                    } else if (message.getType() == MessageTypes.NOTE) {
                         // If user sends a regular string, send the message string to all users
                         System.out.println(message.getContent());
                         if (outStreams.contains(oos)) {
@@ -87,13 +88,13 @@ public class Server {
                                 stream.writeObject(message);
                             }
                         }
-                    } else if (message.getType().equals("SHUTDOWN ALL")) {
+                    } else if (message.getType() == MessageTypes.SHUTDOWN_ALL) {
                         // If user sends SHUTDOWN ALL, terminate all connections and shut down the server
                         System.out.println("Server is shutting down...");
                         for (ObjectOutputStream stream : outStreams) {
                             stream.writeObject(message);
                         }
-                        System.exit(0);
+//                        System.exit(0);
                     }
 
                 }
