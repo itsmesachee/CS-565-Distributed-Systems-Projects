@@ -4,19 +4,19 @@ import java.io.Serializable;
 
 public class Message implements Serializable {
 
-    private String type;
+    private int type;
     private Object content;
 
-    public Message(String type, Object content) {
+    public Message(int type, Object content) {
         this.type = type;
         this.content = content;
     }
 
-    public String getType() {
+    public int getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(int type) {
         this.type = type;
     }
 
