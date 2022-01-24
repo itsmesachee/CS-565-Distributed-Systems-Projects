@@ -12,7 +12,7 @@ import java.net.Socket;
 import java.util.Scanner;
 import model.NodeInfo;
 
-public class Client {
+public class Client implements MessageTypes {
 
     private String name;
     NodeInfo nodeInfo;
@@ -68,7 +68,7 @@ public class Client {
                     thread.start();
 
                 } else if (parts[0].equals("LEAVE")) {
-                    // If first word of string is LEAVE, leave chat without terminating
+                    // If first word of string is LEAVE, leave chat without terminating the client
                     Message msg = new Message(MessageTypes.LEAVE, nodeInfo);
                     oos.writeObject(msg);
                     socket.close();
@@ -85,6 +85,7 @@ public class Client {
                         oos.writeObject(msg);
                     }
                 } else if (parts[0].equals("SHUTDOWN")) {
+                    // Terminates the client which sent this message
                     if (socket != null) {
                         Message msg = new Message(MessageTypes.SHUTDOWN, nodeInfo);
                         oos.writeObject(msg);
@@ -92,7 +93,7 @@ public class Client {
                     }
                     System.exit(0);
                 } else {
-
+                    // If client tries to leave without joining first, print this message
                     if (socket != null) {
                         Message msg = new Message(MessageTypes.NOTE, name + ": " + text);
                         oos.writeObject(msg);
