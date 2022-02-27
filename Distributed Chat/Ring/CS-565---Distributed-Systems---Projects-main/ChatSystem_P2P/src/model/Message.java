@@ -17,12 +17,14 @@ public class Message implements MessageTypes,Serializable {
     private Object content;
     private NodeInfo originalSender;
 
+    //Constructor to initialize an instance with the user input and the sender client node's info as well.
     public Message(int type, Object content, NodeInfo currentClient) {
         this.type = type;
         this.content = content;
         this.originalSender = currentClient;
     }
 
+    // Getter and Setter methods for ease of access & manipulation of Message Class Attributes
     public int getType() {
         return type;
     }
@@ -39,6 +41,7 @@ public class Message implements MessageTypes,Serializable {
         this.content = content;
     }
 
+    
     public NodeInfo getOriginalSender(Message message)
     {
         return message.originalSender;
@@ -57,7 +60,8 @@ public class Message implements MessageTypes,Serializable {
     public Message()
     {
     }
-
+    
+//Takes the user input and classifes for the command and calls the respective function with the argument
     public void readMessage(String name, Client currentClient) throws InterruptedException
     {
         originalSender = (new NodeInfo(currentClient.getIP(), currentClient.getPort(), name));
@@ -126,6 +130,7 @@ public class Message implements MessageTypes,Serializable {
                     }
                     else
                     {
+                        // This call is made, when a client isn't connected to a chat and inputs his commands/text.
                         displayNotInChat();
                     }
 
@@ -139,6 +144,8 @@ public class Message implements MessageTypes,Serializable {
 
     }
 
+    //This is the standard join method, a client joining  a chat ring that has already been established and is running.
+    
     public void joinRegular(String parts1, int parts2, String name, Client currentClient) throws IOException
     {
         currentClient.setNextNode(new NodeInfo(parts1, parts2, name));
@@ -196,11 +203,15 @@ public class Message implements MessageTypes,Serializable {
         thread1.start();
     }
 
+    //When there is no exisiting chat ring, this function establishes the chat with this application.
+    
     public void joinAsFirstNode(String name, Client currentClient) throws IOException
     {
         joinRegular(currentClient.getIP(), currentClient.getPort(), name, currentClient);
     }
-
+      /*
+    This method is used to leave the chat by any particular client 
+    */
     public void leave(String name, Client currentClient) throws IOException
     {
         if (currentClient.getSocket() != null)
@@ -229,6 +240,9 @@ public class Message implements MessageTypes,Serializable {
 
     }
 
+    /*
+    This method is used for sending note to all the clients connected in the chat
+    */
     public void sendNote(String text, String name, Client currentClient)
     {
         originalSender = (new NodeInfo(currentClient.getIP(), currentClient.getPort(), name));
@@ -243,7 +257,9 @@ public class Message implements MessageTypes,Serializable {
             e.printStackTrace();
         }
     }
-
+    /*
+    This method is used to terminate a specific client from the connection
+    */
     public void shutdown(String name, Client currentClient) throws IOException, InterruptedException
     {
         // Terminates the client which sent this message
@@ -259,7 +275,9 @@ public class Message implements MessageTypes,Serializable {
         }
         System.exit(0);
     }
-
+    /*
+    This method is used to terminate all of the clients from the connection
+    */
     public void shutdownAll(String name, Client currentClient) throws IOException
     {
         // Shutdown all clients and the receiver
@@ -276,7 +294,9 @@ public class Message implements MessageTypes,Serializable {
             currentClient.getObjectOutputStream().writeObject(msg);
         }
     }
-
+    /*
+    This method is used to display the user that he has not joined the chat yet
+    */
     public void displayNotInChat()
     {
         System.out.println("You have not joined the chat!");
