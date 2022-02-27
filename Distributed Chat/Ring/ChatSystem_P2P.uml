@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>D:/Dossiers/Masters/Distributed Systems/DS Assignments/DS Assignment 1/CS-565-project_submitted/CS-565---Distributed-Systems---Projects-main/ChatSystem_P2P</OriginalElement>
+  <nodes>
+    <node x="544.0" y="433.0">model.MessageTypes</node>
+    <node x="77.5" y="0.0">server.Server</node>
+    <node x="505.0" y="0.0">client.Client</node>
+    <node x="284.0" y="433.0">model.Message</node>
+    <node x="0.0" y="193.0">server.Server.ClientHandler</node>
+    <node x="0.0" y="433.0">model.NodeInfo</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="server.Server.ClientHandler" target="server.Server" relationship="INNER_CLASS">
+      <point x="0.0" y="-97.5" />
+      <point x="0.0" y="71.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic" zoom="0.8357142857142857" showDependencies="true" x="382.0" y="339.4017094017094" />
+  <SelectedNodes>
+    <node>server.Server.ClientHandler</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Constructors</Category>
+    <Category>Fields</Category>
+    <Category>Inner Classes</Category>
+    <Category>Methods</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
