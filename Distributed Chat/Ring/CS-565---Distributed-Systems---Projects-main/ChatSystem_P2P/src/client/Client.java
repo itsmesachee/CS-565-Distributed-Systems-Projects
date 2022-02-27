@@ -36,6 +36,8 @@ public class Client implements MessageTypes
     String IP;
     int port;
 
+//Client constructor - initializes the current client node with self connectivity details
+    
     public Client(String name, String IP, int port)
     {
         this.name = name;
@@ -45,7 +47,8 @@ public class Client implements MessageTypes
         System.out.println("Write commands..");
     }
 
-
+// Setter methods for Object Streams and socket
+    
     public void setObjectInputStream(ObjectInputStream objectInputStream)
     {
         this.objectInputStream = objectInputStream;
@@ -60,7 +63,8 @@ public class Client implements MessageTypes
     {
         this.socket = socket;
     }
-
+  //independent listen method for accepting input from client and responding with respective command
+  
     public void listen() throws InterruptedException
     {
 
@@ -117,6 +121,9 @@ public class Client implements MessageTypes
 
     /**
      * @param args the command line arguments
+     -> starts with prompting for name
+     -> then, take the current node's connectivity info
+     -> Then, open the chat structure - establishing sender and receiver node threads for clients!
      */
     public static void main(String[] args) throws InterruptedException
     {
