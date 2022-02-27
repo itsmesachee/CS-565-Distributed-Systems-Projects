@@ -88,7 +88,7 @@ public class Client implements MessageTypes
         return socket;
     }
 
-
+// Getter and Setter methods for easy access enablement of client's connectivity information throughout the lifecycle
     public String getIP()
     {
         return IP;
@@ -125,18 +125,20 @@ public class Client implements MessageTypes
      -> then, take the current node's connectivity info
      -> Then, open the chat structure - establishing sender and receiver node threads for clients!
      */
+     
     public static void main(String[] args) throws InterruptedException
     {
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter your name: "); // Enter human-readable client name
         String name = sc.nextLine();
 
-        System.out.print("Enter your IP and port: "); // Enter human-readable client name
+        System.out.print("Enter your IP and port: "); // Enter our IP address and port number, through which we are connecting(self).
         String IPAndPort = sc.nextLine();
         String[] parts = IPAndPort.split(" ");
         String IP = parts[0];
         int port = Integer.parseInt(parts[1]);
 
+        // commencing an instance of client based on the user input data.
         Client currentClient = new Client(name, IP, port);
         Thread thread2 = new Thread(() ->
         {
@@ -155,6 +157,7 @@ public class Client implements MessageTypes
         currentClient.listen();
     }
 
+    // Returns the Host/client node data of each individual client w.r.t them being the Subject for executing this method.
     private NodeInfo readConnectionInfo()
     {
         try
