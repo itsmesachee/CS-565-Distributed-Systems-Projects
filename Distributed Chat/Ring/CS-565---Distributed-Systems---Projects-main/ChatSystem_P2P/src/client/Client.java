@@ -1,22 +1,21 @@
 package client;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 
 import model.Message;
 import model.MessageTypes;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
 import model.NodeInfo;
 import receiver.Receiver;
 
-public class Client implements MessageTypes
+public class Client implements MessageTypes, Serializable
 {
+    /*
+     * Class which starts the main program
+     * */
 
     //variables to hold the name of client per that instance and nodeInfo for which client has established connection
 
@@ -36,8 +35,6 @@ public class Client implements MessageTypes
     String IP;
     int port;
 
-//Client constructor - initializes the current client node with self connectivity details
-    
     public Client(String name, String IP, int port)
     {
         this.name = name;
@@ -47,8 +44,7 @@ public class Client implements MessageTypes
         System.out.println("Write commands..");
     }
 
-// Setter methods for Object Streams and socket
-    
+
     public void setObjectInputStream(ObjectInputStream objectInputStream)
     {
         this.objectInputStream = objectInputStream;
@@ -63,8 +59,7 @@ public class Client implements MessageTypes
     {
         this.socket = socket;
     }
-  //independent listen method for accepting input from client and responding with respective command
-  
+
     public void listen() throws InterruptedException
     {
 
@@ -88,7 +83,7 @@ public class Client implements MessageTypes
         return socket;
     }
 
-// Getter and Setter methods for easy access enablement of client's connectivity information throughout the lifecycle
+
     public String getIP()
     {
         return IP;
@@ -121,43 +116,26 @@ public class Client implements MessageTypes
 
     /**
      * @param args the command line arguments
-     -> starts with prompting for name
-     -> then, take the current node's connectivity info
-     -> Then, open the chat structure - establishing sender and receiver node threads for clients!
      */
-     
     public static void main(String[] args) throws InterruptedException
     {
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter your name: "); // Enter human-readable client name
         String name = sc.nextLine();
 
-        System.out.print("Enter your IP and port: "); // Enter our IP address and port number, through which we are connecting(self).
+        System.out.print("Enter your IP and port: "); // Enter human-readable client name
         String IPAndPort = sc.nextLine();
         String[] parts = IPAndPort.split(" ");
         String IP = parts[0];
         int port = Integer.parseInt(parts[1]);
 
-        // commencing an instance of client based on the user input data.
         Client currentClient = new Client(name, IP, port);
-        Thread thread2 = new Thread(() ->
-        {
-            Receiver server;
-            try
-            {
-                server = new Receiver(currentClient);
-                server.listenToClient(currentClient);
-            } catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        });
+        Thread thread2 = new UserHandler(currentClient);
         thread2.start();
 
         currentClient.listen();
     }
 
-    // Returns the Host/client node data of each individual client w.r.t them being the Subject for executing this method.
     private NodeInfo readConnectionInfo()
     {
         try
@@ -172,10 +150,34 @@ public class Client implements MessageTypes
             String ip = parts[0];
             int port = Integer.parseInt(parts[1]);
             return new NodeInfo(ip, port, name);
-        } catch (FileNotFoundException e)
+        }
+        catch (FileNotFoundException e)
         {
             System.out.println("File not found!");
         }
         return null;
+    }
+}
+
+class UserHandler extends Thread implements Serializable
+{
+    Client currentClient;
+
+    public UserHandler(Client currentClient)
+    {
+        this.currentClient = currentClient;
+    }
+
+    public void run()
+    {
+        Receiver server;
+        try
+        {
+            server = new Receiver(currentClient);
+            server.listenToClient(currentClient);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 }
