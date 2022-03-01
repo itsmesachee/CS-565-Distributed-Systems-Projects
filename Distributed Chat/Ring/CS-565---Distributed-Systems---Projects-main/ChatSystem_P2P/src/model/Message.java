@@ -1,6 +1,7 @@
 package model;
 
 import client.Client;
+import receiver.Receiver;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,37 +12,46 @@ import java.util.Scanner;
 
 import static java.lang.Thread.sleep;
 
-public class Message implements MessageTypes,Serializable {
+public class Message implements MessageTypes, Serializable
+{
+
+    /*
+     *   This class is used to read user input and act accordingly
+     *  - request sockets, send messages, shutdown etc.
+     *
+     * */
 
     private int type;
     private Object content;
     private NodeInfo originalSender;
 
-    //Constructor to initialize an instance with the user input and the sender client node's info as well.
-    public Message(int type, Object content, NodeInfo currentClient) {
+    public Message(int type, Object content, NodeInfo currentClient)
+    {
         this.type = type;
         this.content = content;
         this.originalSender = currentClient;
     }
 
-    // Getter and Setter methods for ease of access & manipulation of Message Class Attributes
-    public int getType() {
+    public int getType()
+    {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(int type)
+    {
         this.type = type;
     }
 
-    public Object getContent() {
+    public Object getContent()
+    {
         return content;
     }
 
-    public void setContent(Object content) {
+    public void setContent(Object content)
+    {
         this.content = content;
     }
 
-    
     public NodeInfo getOriginalSender(Message message)
     {
         return message.originalSender;
@@ -53,19 +63,20 @@ public class Message implements MessageTypes,Serializable {
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return content.toString();
     }
 
     public Message()
     {
     }
-    
-//Takes the user input and classifes for the command and calls the respective function with the argument
+
     public void readMessage(String name, Client currentClient) throws InterruptedException
     {
         originalSender = (new NodeInfo(currentClient.getIP(), currentClient.getPort(), name));
         originalSender.setNextNode(currentClient.getNextNode());
+
         while (true)
         {
             try
@@ -74,13 +85,12 @@ public class Message implements MessageTypes,Serializable {
 
                 String text = sc.nextLine();
 
-
                 String[] parts = text.split(" "); // Split the message to identify any commands
                 int size = parts.length;
                 // takes in the clients name followed by command
 
                 // First word of string is JOIN
-                if ((parts[0].equals("JOIN"))&&(size == 1))
+                if ((parts[0].equals("JOIN")) && (size == 1))
                 {
                     joinAsFirstNode(name, currentClient);
                 }
@@ -99,7 +109,7 @@ public class Message implements MessageTypes,Serializable {
                      * this command shall leave the chat
                      */
 
-                    leave(name,currentClient);
+                    leave(name, currentClient);
                 }
                 else if (parts[0].equals("SHUTDOWN_ALL"))
                 {
@@ -121,7 +131,6 @@ public class Message implements MessageTypes,Serializable {
                     // If client tries to leave without joining first, print this message
                     if (currentClient.getSocket() != null)
                     {
-
                         /*
                          * Here's the key part of our chat system that handles the messages/command sent by multiple clients through receiver.
                          */
@@ -130,24 +139,20 @@ public class Message implements MessageTypes,Serializable {
                     }
                     else
                     {
-                        // This call is made, when a client isn't connected to a chat and inputs his commands/text.
                         displayNotInChat();
                     }
-
                 }
-
-            } catch (IOException ex)
+            }
+            catch (IOException ex)
             {
                 ex.printStackTrace();
             }
         }
-
     }
 
-    //This is the standard join method, a client joining  a chat ring that has already been established and is running.
-    
     public void joinRegular(String parts1, int parts2, String name, Client currentClient) throws IOException
     {
+        // Request socket connection to the known IP and port - which will become the next node of current client.
         currentClient.setNextNode(new NodeInfo(parts1, parts2, name));
         currentClient.setSocket(new Socket(currentClient.getNextNode().getIP(), currentClient.getNextNode().getPort()));
         currentClient.setObjectOutputStream(new ObjectOutputStream(currentClient.getSocket().getOutputStream()));
@@ -165,53 +170,19 @@ public class Message implements MessageTypes,Serializable {
 
 
         //creating a thread for the client with our required functionality with respect to the commands
-
-        Thread thread1 = new Thread(() ->
-        {
-            while (true)
-            {
-                try
-                {
-
-
-                    /*
-                     * listen and transfer all messages as TYPE - NOTE to receiver until the input matches
-                     * the pre-defined command 'SHUTDOWN ALL'.IF yes, then respective code for that command is executed,
-                     * by closing the socket and giving debugging information to user about the status of the receiver.
-                     */
-
-                    if (currentClient.getSocket() != null)
-                    {
-                        Message msg1 = (Message) currentClient.getObjectInputStream().readObject();
-                        if (msg1.getType() == MessageTypes.NOTE)
-                        {
-                            System.out.println(msg1.getContent());
-                        }
-                        else if (msg1.getType() == MessageTypes.SHUTDOWN_ALL)
-                        {
-                            System.out.println("Client is closed!");
-                            currentClient.getSocket().close();
-                            System.exit(0);
-                        }
-                    }
-                } catch (IOException | ClassNotFoundException e)
-                {
-                    //e.printStackTrace();
-                }
-            }
-        });
+        Thread thread1 = new MessageHandler(currentClient);
         thread1.start();
     }
 
-    //When there is no exisiting chat ring, this function establishes the chat with this application.
-    
     public void joinAsFirstNode(String name, Client currentClient) throws IOException
     {
+        // The first node joining the chat has no other clients to connect to.
+        // It connects to itself forming a ring with only one node.
+        // Therefore, the node itself is its nextnode.
+
         joinRegular(currentClient.getIP(), currentClient.getPort(), name, currentClient);
     }
-      /*
-    This method is used to leave the chat by any particular client 
-    */
+
     public void leave(String name, Client currentClient) throws IOException
     {
         if (currentClient.getSocket() != null)
@@ -224,8 +195,11 @@ public class Message implements MessageTypes,Serializable {
             originalSender = (new NodeInfo(currentClient.getIP(), currentClient.getPort(), name));
             originalSender.setNextNode(currentClient.getNextNode());
 
+            // Send a message that you are leaving to next node
             Message msg = new Message(MessageTypes.LEAVE, currentClient.getNextNode(), originalSender);
             currentClient.getObjectOutputStream().writeObject(msg);
+
+            // Close socket connections
             currentClient.getSocket().close();
             currentClient.setSocket(null);
             currentClient.setObjectInputStream(null);
@@ -240,11 +214,9 @@ public class Message implements MessageTypes,Serializable {
 
     }
 
-    /*
-    This method is used for sending note to all the clients connected in the chat
-    */
     public void sendNote(String text, String name, Client currentClient)
     {
+        // Regular messages - forward to next node.
         originalSender = (new NodeInfo(currentClient.getIP(), currentClient.getPort(), name));
         originalSender.setNextNode(currentClient.getNextNode());
 
@@ -252,17 +224,21 @@ public class Message implements MessageTypes,Serializable {
         try
         {
             currentClient.getObjectOutputStream().writeObject(msg);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             e.printStackTrace();
         }
     }
-    /*
-    This method is used to terminate a specific client from the connection
-    */
+
     public void shutdown(String name, Client currentClient) throws IOException, InterruptedException
     {
-        // Terminates the client which sent this message
+        // If first word of string is SHUTDOWN, leave chat without terminating the client
+        /*
+         * this code block is for the "SHUTDOWN" command that states a particular client which executes
+         * this command shall leave the chat and terminate itself.
+         */
+
         originalSender = (new NodeInfo(currentClient.getIP(), currentClient.getPort(), name));
         originalSender.setNextNode(currentClient.getNextNode());
 
@@ -270,14 +246,12 @@ public class Message implements MessageTypes,Serializable {
         {
             Message msg = new Message(MessageTypes.SHUTDOWN, currentClient.getNextNode(), originalSender);
             currentClient.getObjectOutputStream().writeObject(msg);
-            sleep(50);
+            sleep(50);  // Used here since closing immediately disrupts the sending of previous message.
             currentClient.getSocket().close();
         }
-        System.exit(0);
+        System.exit(0);         // Terminates the client
     }
-    /*
-    This method is used to terminate all of the clients from the connection
-    */
+
     public void shutdownAll(String name, Client currentClient) throws IOException
     {
         // Shutdown all clients and the receiver
@@ -294,13 +268,57 @@ public class Message implements MessageTypes,Serializable {
             currentClient.getObjectOutputStream().writeObject(msg);
         }
     }
-    /*
-    This method is used to display the user that he has not joined the chat yet
-    */
+
     public void displayNotInChat()
     {
         System.out.println("You have not joined the chat!");
     }
 
+}
 
+class MessageHandler extends Thread implements Serializable
+{
+    Client currentClient;
+
+    public MessageHandler(Client currentClient)
+    {
+        this.currentClient = currentClient;
+    }
+
+    @Override
+    public void run()
+    {
+        while (true)
+        {
+            try
+            {
+
+
+                /*
+                 * listen and transfer all messages as TYPE - NOTE to receiver until the input matches
+                 * the pre-defined command 'SHUTDOWN ALL'.IF yes, then respective code for that command is executed,
+                 * by closing the socket and giving debugging information to user about the status of the receiver.
+                 */
+
+                if (currentClient.getSocket() != null)
+                {
+                    Message msg1 = (Message) currentClient.getObjectInputStream().readObject();
+                    if (msg1.getType() == MessageTypes.NOTE)
+                    {
+                        System.out.println(msg1.getContent());
+                    }
+                    else if (msg1.getType() == MessageTypes.SHUTDOWN_ALL)
+                    {
+                        System.out.println("Client is closed!");
+                        currentClient.getSocket().close();
+                        System.exit(0);
+                    }
+                }
+            }
+            catch (IOException | ClassNotFoundException e)
+            {
+                //e.printStackTrace();
+            }
+        }
+    }
 }
